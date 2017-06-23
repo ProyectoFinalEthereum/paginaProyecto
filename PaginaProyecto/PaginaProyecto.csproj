@@ -77,7 +77,6 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="MySql.Data, Version=6.9.9.0, Culture=neutral, PublicKeyToken=c5687fc88969c44d, processorArchitecture=MSIL" />
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
@@ -342,11 +341,12 @@
     <Content Include="Views\Manage\VerifyPhoneNumber.cshtml" />
     <Content Include="Views\Shared\Lockout.cshtml" />
     <Content Include="Views\Shared\_LoginPartial.cshtml" />
+    <Content Include="Views\RegistracionUsuario\RegistrarUsuarioOG.cshtml" />
+    <Content Include="Views\RegistracionUsuario\LoguearUsuario.cshtml" />
     <Content Include="Views\Shared\_MiLayout.cshtml" />
     <Content Include="Views\Home\Index.cshtml" />
     <Content Include="Views\RegistracionUsuario\RegistrarUsuario.cshtml" />
-    <Content Include="Views\RegistracionUsuario\HomeUsuario.cshtml" />
-    <Content Include="Views\RegistracionUsuario\LoguearUsuario.cshtml" />
+    <Content Include="Views\RegistracionUsuario\Exito.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
