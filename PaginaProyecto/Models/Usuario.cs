@@ -5,18 +5,21 @@ using System.Web;
 using System.Data;
 using MySql.Data.MySqlClient;
 using System.ComponentModel.DataAnnotations;
+using System.Data.OleDb;
 
 namespace PaginaProyecto.Models
 {
     public class Usuario
     {
         //declaro conexion
-
-        private MySqlConnection Conexiondb = new MySqlConnection("server=localhost; Uid=root; Password=Proyecto; Database=proyectodb; Port=3306");
+        //En la compu de herni la password es: Proyecto y en las otras root
+        private MySqlConnection Conexiondb = new MySqlConnection("server=localhost; Uid=root; Password=root; Database=mydb; Port=3306");
         
 
         //propiedades de la clase
         public int UsuarioID { get; set; }
+
+        public bool EmailValido { get; set; }
 
         [Required(ErrorMessage = "El campo {0} es obligatorio")]
         [StringLength(60, ErrorMessage = "El nombre debe tener menos de 60 caracteres")]
@@ -44,8 +47,6 @@ namespace PaginaProyecto.Models
         [Compare("Contraseña", ErrorMessage = "La contraseña y la confirmacion no son iguales")]
         public string ConfirmarContraseña { get; set; }
 
-        public HttpPostedFileBase Imagen { get; set; }
-
         //metodos publicos
 
         //Agrega el usuario que ejecuta el metodo a la base de datos
@@ -53,31 +54,59 @@ namespace PaginaProyecto.Models
         {
             //abro conexion y declaro una transaccion
             Conexiondb.Open();
-            MySqlTransaction transaccion = Conexiondb.BeginTransaction();
+            MySqlTransaction tran = Conexiondb.BeginTransaction();
             try
             {
                 // asigno el nombre de la consulta a el nombre de consulta que tengo guardado en la DB
-                MySqlCommand Comando = new MySqlCommand("InsertarUsuario", Conexiondb, transaccion);
-                Comando.CommandType = CommandType.StoredProcedure;
-
-                //agrego los parametros
-                Comando.Parameters.AddWithValue("PNombre", this.Nombre);
-                Comando.Parameters.AddWithValue("PApellido", this.Apellido);
-                Comando.Parameters.AddWithValue("PEmail", this.Email);
-                Comando.Parameters.AddWithValue("PContrasena", this.Contraseña);
+                MySqlCommand consulta = new MySqlCommand("InsertarUsuario",Conexiondb,tran);            
+                consulta.CommandType = CommandType.StoredProcedure;
+                //Agrego los parametros
+                consulta.Parameters.AddWithValue("PNombre", this.Nombre);
+                consulta.Parameters.AddWithValue("PEmail", this.Email);
+                consulta.Parameters.AddWithValue("PApellido",this.Apellido);
+                consulta.Parameters.AddWithValue("PContraseña",this.Contraseña);
+                //consulta.Parameters.AddWithValue("PImagen", this.Imagen);
 
                 //ejecuto la consulta que no devuelve nada
-                Comando.ExecuteNonQuery();
-                transaccion.Commit();
+                consulta.ExecuteNonQuery();
+                tran.Commit();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                try
+                  //este bloque de codigo va a manejar cualquier error que pudiera 
+                  //ocurrir en el servidor que pudieran causar la falla del reintento,
+                  //como por ejemplo una conexion cerrada.
+                  Console.WriteLine("Exception Type: {0}", ex.GetType());
+                  Console.WriteLine("  Message: {0}", ex.Message);
+            }
+            Conexiondb.Close();
+        }
+
+        //devuelve un Usuario si el mail y la contraseña(parametros) coinciden con un mail y una contraseña de un registro en la DB
+        public void LoguearUsuario()
+        {
+            //abro conexion y declaro una transaccion
+            Conexiondb.Open();
+            MySqlTransaction tran = Conexiondb.BeginTransaction();
+            try
+            {
+                // asigno el nombre de la consulta a el nombre de consulta que tengo guardado en la DBConsulta.CommandType = CommandType.StoredProcedure;
+                MySqlCommand consulta = new MySqlCommand("LoguearUsuario", Conexiondb, tran);
+                consulta.CommandType = CommandType.StoredProcedure;
+                //Agrego los parametros
+                consulta.Parameters.AddWithValue("PEmail", this.Email);
+                consulta.Parameters.AddWithValue("PContraseña", this.Contraseña);
+
+                //ejecuto la consulta y obtengo un iterable con registros
+                MySqlDataReader dr = consulta.ExecuteReader();
+                if (dr.Read())
                 {
-                    //pruebo la ejecucion de la consulta otra vez
-                    transaccion.Rollback();
+                    this.Nombre = dr["Nombre"].ToString();
+                    this.Apellido = dr["Apellido"].ToString();
                 }
-                catch (Exception ex2)
+            }
+            catch (Exception ex2)
+            {
                 {
                     //este bloque de codigo va a manejar cualquier error que pudieran 
                     //ocurrir en el servidor que pudieran causar la falla del reintento,
@@ -89,56 +118,36 @@ namespace PaginaProyecto.Models
             Conexiondb.Close();
         }
 
-        //devuelve un Usuario si el mail y la contraseña(parametros) coinciden con un mail y una contraseña de un registro en la DB
-        public Usuario LoguearUsuario(Usuario oUsuario)
+        //devuelve true si el mail ya existe en algun registro en la DB y devuelve false de lo contrario
+        public void ExisteMail()
         {
-            Usuario retUsuario = new Usuario();
             //abro conexion y declaro una transaccion
             Conexiondb.Open();
-            MySqlTransaction transaccion = Conexiondb.BeginTransaction();
+            MySqlTransaction tran = Conexiondb.BeginTransaction();
             try
             {
-                // asigno el nombre de la consulta a el nombre de consulta que tengo guardado en la DB
-                MySqlCommand Comando = new MySqlCommand("LoguearUsuario", Conexiondb, transaccion);
-                Comando.CommandType = CommandType.StoredProcedure;
-
-                //agrego los parametros
-                Comando.Parameters.AddWithValue("PEmail", oUsuario.Email);
-                Comando.Parameters.AddWithValue("PContrasena", oUsuario.Contraseña);
+                // asigno el nombre de la consulta a el nombre de consulta que tengo guardado en la DBConsulta.CommandType = CommandType.StoredProcedure;
+                MySqlCommand consulta = new MySqlCommand("ExisteMail", Conexiondb, tran);
+                consulta.CommandType = CommandType.StoredProcedure;
+                //Agrego los parametros
+                consulta.Parameters.AddWithValue("PEmail", Email);
 
                 //ejecuto la consulta y obtengo un iterable con registros
-                MySqlDataReader dr = Comando.ExecuteReader();
-                transaccion.Commit();
-
-                while (dr.Read())
+                MySqlDataReader dr = consulta.ExecuteReader();
+                if (dr.HasRows == false)
                 {
-                    if (oUsuario.Email == dr["Email"].ToString() && oUsuario.Contraseña == dr["Contrasena"].ToString())
-                    {
-                        retUsuario.Nombre = dr["Nombre"].ToString();
-                        retUsuario.Apellido = dr["Apellido"].ToString();
-                        retUsuario.Email = dr["Email"].ToString();
-                        retUsuario.Contraseña = dr["Contrasena"].ToString();
-                    }
+                    this.EmailValido = true;
                 }
             }
-            catch (Exception)
+            catch (Exception ex2)
             {
-                try
-                {
-                    //pruebo la ejecucion de la consulta otra vez
-                    transaccion.Rollback();
-                }
-                catch (Exception ex2)
-                {
                     //este bloque de codigo va a manejar cualquier error que pudieran 
                     //ocurrir en el servidor que pudieran causar la falla del reintento,
                     //como por ejemplo una conexion cerrada.
                     Console.WriteLine("Rollback Exception Type: {0}", ex2.GetType());
                     Console.WriteLine("  Message: {0}", ex2.Message);
-                }
             }
             Conexiondb.Close();
-            return retUsuario;
         }
     }
 }

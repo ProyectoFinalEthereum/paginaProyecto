@@ -1,7 +1,7 @@
 ﻿@using PaginaProyecto.Models
 @model Usuario
 @{
-    ViewBag.Title = "EtherProject - Iniciar Sesion";
+    ViewBag.Title = "Log In";
     Layout = "~/Views/Shared/_MiLayout.cshtml";
 }
 <div class="container col-sm-11 col-md-push-1 col-md-10">
@@ -30,6 +30,7 @@
                     <div class="form-group col-md-offset-2 col-md-10">
                         <input type="submit" value="Log in" class="btn btn-default" />
                     </div>
+                    <p>@ViewBag.MensajeError</p>
                     <p class="col-md-offset-2 col-md-10">
                         @Html.ActionLink("¿No tenes una cuenta?", "RegistrarUsuario", "RegistracionUsuario")
                     </p>

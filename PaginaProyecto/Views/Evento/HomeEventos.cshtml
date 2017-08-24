@@ -1,0 +1,25 @@
+﻿@using PaginaProyecto.Models
+@model Evento
+@{
+    ViewBag.Title = "Eventos";
+    Layout = "~/Views/Shared/_MiLayout.cshtml";
+}
+<div class="row container-fluid">
+    <h3 class="col-xs-9 col-md-9" style="text-align:center; margin-top:10%;">Eventos</h3>
+    <a href="@Url.Action("AgregarEvento")"><span class="glyphicon glyphicon-plus col-xs-2 col-md-2" aria-hidden="true" style="margin-top:10%;"></span></a>
+</div>
+
+<div class="row container">
+    @{
+        List<Evento> listaEventos = ViewBag.ListaEventos;
+        foreach (Evento oEvento in listaEventos)
+        {
+            <div class="jumbotron  col-md-5" style="text-align: center">
+                <img src="http://www.somoscolombianos.com/wp-content/uploads/2015/05/cura-contra-el-cancer.jpg" alt="cancer" class="img-thumbnail"/>
+                <h5>@oEvento.NombreEvento</h5>
+                <button type="button" class="btn btn-warning">@Html.ActionLink("Ver más", "Evento1", "Evento"/*, new { sucursalID = unaSucursal.ID }, null*/)</button>
+            </div>
+            <div col-md-2></div>
+        }
+    }
+</div>

@@ -20,13 +20,19 @@ namespace PaginaProyecto.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult RegistrarUsuario(Usuario oUsuario)
         {
-            if (ModelState.IsValid)
+            oUsuario.ExisteMail();
+            if (ModelState.IsValid && oUsuario.EmailValido)
             {
                 oUsuario.InsertarUsuario();
+                TempData["UsuarioLogueado"] = oUsuario;
                 return RedirectToAction("HomeUsuario");
             }
             else
             {
+                if (!oUsuario.EmailValido)
+                {
+                    ViewBag.EmailUsado = "El Email ingresado no esta disponible";
+                }
                 return View();
             }
         }
@@ -42,18 +48,24 @@ namespace PaginaProyecto.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult LoguearUsuario(Usuario oUsuario)
         {
-            Usuario objUsuario = new Usuario();
-            objUsuario = oUsuario.LoguearUsuario(oUsuario);
-            if (objUsuario.Email == oUsuario.Email && oUsuario.Contraseña == objUsuario.Contraseña)
+            oUsuario.LoguearUsuario();
+            if (oUsuario.Nombre != null)
             {
-                ViewBag.UsuarioLogueado = objUsuario;
+                TempData["UsuarioLogueado"] = oUsuario;
                 return RedirectToAction("HomeUsuario");
             }
             else
             {
-                ViewBag.MensajeErrorLogueo = "El usuario o la contraseña no son correctos";
+                ViewBag.MensajeError = "El usuario o la contraseña no son correctos";
                 return View();
             }
+        }
+
+        // GET : /RegistracionUsuario/HomeUsuario
+        public ActionResult HomeUsuario()
+        {
+            ViewBag.UsuarioLogueado = TempData["UsuarioLogueado"];
+            return View();
         }
     }
 }

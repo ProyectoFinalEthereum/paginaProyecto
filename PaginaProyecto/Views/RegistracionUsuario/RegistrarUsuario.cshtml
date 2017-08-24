@@ -10,6 +10,7 @@
     {
         @Html.AntiForgeryToken()
 
+        <p class="text-danger">@ViewBag.EmailUsado</p>
         @Html.ValidationSummary("", new { @class = "text-danger" })
         <div class="form-group">
             @Html.LabelFor(x => x.Nombre, new { @class = "col-md-2 control-label" })
